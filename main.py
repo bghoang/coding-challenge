@@ -13,25 +13,19 @@ def main():
 	# Getting the path from the user
 	passwdPath = sys.argv[1]
 	groupPath = sys.argv[2]
+	updateDict = {}
 	# Read the /etc/passwd files
-	readPasswdFile(passwdPath)
+	updateDict = readPasswdFile(passwdPath, updateDict)
+	
 	# Read the /etc/group files	
-	'''groupFile = open(groupPath, "r")
-	line = groupFile.readline()
-	while line:
-		print(line)
-		line = groupFile.readline()
-	groupFile.close()
-'''
-	#print(passwdFile)
-	#print(groupPath)
-
-def readPasswdFile(passwdPath):
-	newDict = {}
+	groupArray= readGroupFile(groupPath, updateDict)
+	#print(updateDict)
+ 		
+def readPasswdFile(passwdPath, newDict):
+	#newDict = {}
 	passwdFile = open(passwdPath, "r")
 	eachLine = passwdFile.readline()
 	while eachLine:
-		#print(eachLine)
 		UserName = eachLine.split(':')[0] 
 		userID = eachLine.split(':')[2]
 		userInfo = eachLine.split(':')[4]
@@ -39,14 +33,31 @@ def readPasswdFile(passwdPath):
 		#newDict.update(UserName={{"group": [],"uid": userID, "full_name": userInfo}})
 		eachLine = passwdFile.readline()
 	passwdFile.close()
-	newDict = sorted(newDict, reverse=True)
+	#newDict = sorted(newDict, reverse=True)
 	#newDict = collections.OrderedDict(newDict)
 	# Convert dict to string object
-	newDict = json.dumps(newDict,indent=4)
+	#newDict = json.dumps(newDict,indent=4)
 	# Convert dict to json file
 	#newDict = json.loads(newDict)
-	print(newDict)
+	#print(newDict)
+	return newDict
  
+def readGroupFile(groupPath, newDict):
+	groupFile = open(groupPath, "r")
+	groupArray=[]
+	line = groupFile.readline()
+	while line:
+		groupList = line.split(':')[3]
+		if groupList.strip():
+			groupArray.append(groupList)		
+			#print(groupList)
+		line = groupFile.readline()
+	groupFile.close()
+	for i in range(len(groupArray)):
+		groupArray[i] = groupArray[i].strip('\n')
+	print(groupArray)
+	return groupArray	
+
 
 if __name__ == "__main__":
 	main()
