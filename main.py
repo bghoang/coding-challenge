@@ -3,6 +3,9 @@ Bao Hoang
 This is the main file for the passwd parsing  
 '''
 import sys
+import json
+from collections import OrderedDict
+#import collections
 import os
 
 
@@ -24,6 +27,7 @@ def main():
 	#print(groupPath)
 
 def readPasswdFile(passwdPath):
+	newDict = {}
 	passwdFile = open(passwdPath, "r")
 	eachLine = passwdFile.readline()
 	while eachLine:
@@ -31,12 +35,17 @@ def readPasswdFile(passwdPath):
 		UserName = eachLine.split(':')[0] 
 		userID = eachLine.split(':')[2]
 		userInfo = eachLine.split(':')[4]
-		print(UserName)
-		print(userID)
-		print(userInfo)
+		newDict[UserName] = {"uid": userID, "full_name": userInfo, "group": []}
+		#newDict.update(UserName={{"group": [],"uid": userID, "full_name": userInfo}})
 		eachLine = passwdFile.readline()
 	passwdFile.close()
-
+	newDict = sorted(newDict, reverse=True)
+	#newDict = collections.OrderedDict(newDict)
+	# Convert dict to string object
+	newDict = json.dumps(newDict,indent=4)
+	# Convert dict to json file
+	#newDict = json.loads(newDict)
+	print(newDict)
  
 
 if __name__ == "__main__":
