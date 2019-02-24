@@ -6,39 +6,69 @@ import sys
 import json
 import os
 
-def main(*args, **kwargs):
+ARGV_ONE = 1
+ARGV_TWO = 2
+CORRECT_ARG_LEN = 3
+WRONG_ARG_LEN = 2
+INDENT = 4
+USERID = "uid"
+FULL_NAME = "full_name"
+GROUPS = "groups"
+
+''' 
+This is the main function of this file
+It will check if the user put in the correct argument 
+It will print out the final result of the dictionary
+'''
+
+def main():
 	# Show the usage if user put in help
-	if sys.argv[1] == "--help" and len(sys.argv) == 1:
-		print("Usage: python main.py [PATH1] [PATH2]")
-		print("PATH1: path to etc/passwd")
-		print("PATH2: path to etc/group")
+	if sys.argv[ARGV_ONE] == "--help" and len(sys.argv) == WRONG_ARG_LEN:
+		print("	Usage: python main.py [PATH1] [PATH2]")
+		print("	PATH1: path to etc/passwd")
+		print("	PATH2: path to etc/group")
 		exit()
 	# Check if user pass in the correct amount of arg
-	if len(sys.argv) != 2:
-		print("Must pass in path to etc/passwd and etc/group")
-		print("Try '--help' for usage instruction")
+	if len(sys.argv) != CORRECT_ARG_LEN:
+		print("	Must only pass in path to etc/passwd and etc/group")
+		print("	Try 'python main.py --help' for usage instruction")
 		exit()
 	
 	else:
 		# Getting the path from the user
-		passwdPath = sys.argv[1]
-		groupPath = sys.argv[2]
+		passwdPath = sys.argv[ARGV_ONE]
+		groupPath = sys.argv[ARGV_TWO]
+		
+		# Try opening the file from the given paths
+		try:
+			# Open the etc/passwd files	
+			passwdFile = open(passwdPath, "r")
+			# Open the etc/group files
+			groupFile = open(groupPath, "r")
+		except IOError: 
+			print("	Cannot open files, please check your path again")
+			print("	Try 'python main.py --help' for usage instruction")
+			exit()
 
+		# Create an empty dict
 		userDict = {}
 		# Read the /etc/passwd files and update userDict
-		userDict = readPasswdFile(passwdPath, userDict)
+		userDict = readPasswdFile(passwdFile, userDict)
 	
 		# Read the /etc/group files and update userDict	
-		userDict= readGroupFile(groupPath, userDict)
+		userDict= readGroupFile(groupFile, userDict)
 		
 		# Convert dict to json object
-		userDict = json.dumps(userDict,indent=4)
+		userDict = json.dumps(userDict,indent=INDENT)
 		print(userDict)
 
- 		
-def readPasswdFile(passwdPath, newDict):
-	# Open the etc/passwd files	
-	passwdFile = open(passwdPath, "r")
+''' 
+This function to read the files in etc/passwd
+It takes in 2 parameters, first one is the file and the second one is a dictionary
+This function will return a dictionary that has been updated
+''' 		
+def readPasswdFile(passwdFile, newDict):
+	# Start reading the file
 	eachLine = passwdFile.readline()
 	# Read each line of the files
 	while eachLine:
@@ -51,36 +81,40 @@ def readPasswdFile(passwdPath, newDict):
 		# Initiate a new username with its user ID and full name
 		newDict[UserName] ={}
 		# Add user ID to the dict
-		newDict[UserName]["uid"] = userID 
+		newDict[UserName][USERID] = userID 
 		# Add full name to the list
-		newDict[UserName]["full_name"] = userInfo
+		newDict[UserName][FULL_NAME] = userInfo
 		# Initiate an empty group array
-		newDict[UserName]["groups"] = []
+		newDict[UserName][GROUPS] = []
 		# Move to the next line 
 		eachLine = passwdFile.readline()
 	passwdFile.close()
 	return newDict
  
-def readGroupFile(groupPath, newDict):
-	# Open the etc/group files
-	groupFile = open(groupPath, "r")
+'''
+This function to read the file in the etc/group
+It takes in 2 parameters, the first one is the file that contain all the file
+in etc/group and the second on is a dictionary
+The method will return a dictionary
+''' 
+def readGroupFile(groupFile, newDict):
 	# Read the file line by line
 	line = groupFile.readline()
 	while line:
+		# Get the group name
 		groupName = line.split(':')[0]
-		#print(groupName)
+		# Get each user in the same group
 		groupList = line.split(':')[3].split(',')
-		#print("list",groupList)
+		# Loop throught the list containing user name
 		for name in groupList:
+			# Check if the user name match those in the dict
 			if name in newDict:
-				newDict[name]["group"].append(groupName.rstrip('\n'))
-				#print("name", name)
+				# If yes then add it to the groups list in the dict
+				newDict[name][GROUPS].append(groupName.rstrip('\n'))
+		# Move to next line
 		line = groupFile.readline()
 	groupFile.close()
-	# Loop through the array that contain all the usernames in a group
-	#newDict = json.dumps(newDict,indent=4)
-	#print(newDict)
 	return newDict
-
+		
 if __name__ == "__main__":
 	main()
